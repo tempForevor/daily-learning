@@ -1,0 +1,134 @@
+html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>每日心理胶囊 · ${date}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f8f6f2;
+            color: #2d2d2d;
+            line-height: 1.8;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .container {
+            max-width: 720px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 48px 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin: 20px auto;
+        }
+        .badge {
+            display: inline-block;
+            background: #e8e0d5;
+            color: #5a4e3e;
+            font-size: 13px;
+            padding: 4px 14px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+        .date { color: #999; font-size: 14px; margin: 8px 0 20px; }
+        h1 { font-size: 28px; margin: 12px 0 8px; color: #1a1a1a; }
+        .concept-en {
+            color: #b8a99a;
+            font-size: 15px;
+            font-weight: 400;
+            margin-bottom: 24px;
+        }
+        h2 {
+            font-size: 18px;
+            color: #5a4e3e;
+            margin: 28px 0 10px;
+            padding-left: 14px;
+            border-left: 4px solid #c4b5a5;
+        }
+        .definition-box {
+            background: #f5f0eb;
+            border-radius: 12px;
+            padding: 20px 24px;
+            font-size: 17px;
+            font-weight: 500;
+            color: #3a2f25;
+            margin: 8px 0 4px;
+        }
+        p { margin: 10px 0; color: #3d3d3d; }
+        .quote-box {
+            background: linear-gradient(135deg, #f5f0eb, #ede8e0);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 24px 0 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: #4a3f35;
+            font-style: italic;
+        }
+        .action-box {
+            background: #f0f4f8;
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin: 12px 0 4px;
+            border-left: 4px solid #7a9bb5;
+        }
+        .footer {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #bbb;
+            text-align: center;
+        }
+        .footer a { color: #b8a99a; text-decoration: none; }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .nav a { color: #7a9bb5; text-decoration: none; }
+        @media (max-width: 600px) {
+            .container { padding: 28px 20px; }
+            h1 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="badge">🧠 每日心理胶囊</div>
+        <div class="date">${date}</div>
+        
+        <h2>📖 一句话定义</h2>
+        <div class="definition-box">${definition}</div>
+        
+        <h2>📚 经典来源</h2>
+        <p>${origin}</p>
+        
+        <h2>💡 生活例子</h2>
+        <p>${example}</p>
+        
+        <h2>🎯 今日行动处方</h2>
+        <div class="action-box">${action}</div>
+        
+        <h2>✨ 今日金句</h2>
+        <div class="quote-box">「${quote}」</div>
+        
+        <div class="nav">
+            <span>← 昨日</span>
+            <a href="archives/">📅 全部存档</a>
+            <span>明日 →</span>
+        </div>
+        <div class="footer">
+            每日自动更新 · 用 DeepSeek 生成
+        </div>
+    </div>
+</body>
+</html>
