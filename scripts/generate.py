@@ -1,4 +1,4 @@
-## 大部分为AI生成的
+## AI生成
 import os
 import json
 import requests
