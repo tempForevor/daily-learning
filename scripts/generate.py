@@ -19,12 +19,19 @@ class PsychologyNews:
         with open(self.history_file, 'r', encoding='utf-8') as f:
             self.concept_history = f.read().split(" ")
 
-        self.prompt = f"""你是一个心理学知识科普作者。请用通俗易懂的方式解读一个心理学概念：
+        concept_history_str = ""
+
+        for i in self.concept_history:
+            concept_history_str += i + ","
+
+        self.prompt = f"""
+        **【重要指令】：这是一次独立的对话。请无视任何之前的对话历史，不要参考任何历史信息。**
+        你是一个心理学知识科普作者。请用通俗易懂的方式解读一个心理学概念：
 
         【背景信息】
-        - 昨天讲的概念是：「{self.concept_history}」
+        - 之前讲的概念是：「{concept_history_str}」
         - 你的任务：为今天选择一个**全新的、不重复的**心理学概念，并完成整篇解读。
-
+        
         【选择原则】
         1. 不能和昨天（以及之前所有天）的概念重复
         2. 优先选择和昨天概念有某种关联的（对立、互补、递进、相关），让读者有「连续感」
@@ -34,7 +41,7 @@ class PsychologyNews:
         请严格按照以下结构输出（不要增加或删减任何章节）：
 
         ## 概念名称
-        （这个概念的名字）
+        （输出这个概念的名字）
 
         ## 一句话定义
         （用一句话说清楚这个概念是什么）
@@ -51,13 +58,13 @@ class PsychologyNews:
         ## 今日金句
         （一句帮你记住这个概念的话，20字以内）
 
-        注意：直接输出内容，不要有多余的说明文字。"""
+        注意：**直接输出内容，不要有多余的说明文字**"""
 
     ## 直接返回每日心理学概念内容
     def call_api(self):
         # return ""
         self.load_concept_history()
-
+        # print(self.prompt)
         if self.prompt == "":
             raise ValueError("请先获取prompt")
         ## 目前使用api : clawbrain-flash
@@ -77,6 +84,7 @@ class PsychologyNews:
                     {"role": "system", "content": self.role},
                     {"role": "user", "content": self.prompt}
                 ],
+                "conversation_id": f"daily_{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
                 "temperature": 0.8,
                 "max_tokens": 1500
             },
@@ -85,7 +93,11 @@ class PsychologyNews:
         if response.status_code != 200:
             raise Exception(f"API 调用失败: {response.text}")
         
-        return response.json()["choices"][0]["message"]["content"]
+        content = response.json()["choices"][0]["message"]["content"]
+
+        print(content)
+
+        return content
 
     ## 用于解析上述心理学概念
     ## 传出字典含有键definition/origin/example/action/quote
@@ -99,10 +111,10 @@ class PsychologyNews:
         for line in lines:
             if line.startswith('## 概念名称'):
                 if current_text:
-                    sections[current_key] = '\n'.join(current_text).strip()
+                    sections[current_key] = ''.join(current_text).strip()
                 current_key = 'name'
                 current_text = []
-            if line.startswith('## 一句话定义'):
+            elif line.startswith('## 一句话定义'):
                 if current_text:
                     sections[current_key] = '\n'.join(current_text).strip()
                 current_key = 'definition'
@@ -153,7 +165,7 @@ class PsychologyNews:
 
     def generate(self):
         today = datetime.now()
-        date_str = today.strftime('%Y/%m/%d')
+        date_str = today.strftime('%Y-%m-%d %H:%M:%S')
 
         content = self.call_api()
 
@@ -187,13 +199,15 @@ class PsychologyNews:
     def create_file(self):
         html = self.generate()
         
+        self.save_concept_history()
+
         with open('index.html', 'w', encoding='utf-8') as f:
             f.write(html)
     
         # 保存存档
         today = datetime.now()
         os.makedirs('archives', exist_ok=True)
-        archive_file = f'archives/{today.strftime("%Y-%m-%d")}.html'
+        archive_file = f'archives/{today.strftime("%Y-%m-%d_%H_%M_%S")}.html'
         with open(archive_file, 'w', encoding='utf-8') as f:
             f.write(html)
 
