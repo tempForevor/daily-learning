@@ -8,32 +8,58 @@ from string import Template
 
 
 class PsychologyNews:
-    prompt = f"""你是一个心理学知识科普作者。请用通俗易懂的方式解读一个心理学概念（请由你随机选定，需要每天都不一样）：
-
-    请按以下格式输出（严格遵守）：
-
-    ## 一句话定义
-    （用一句话说清楚这个概念是什么）
-
-    ## 经典来源 / 背景
-    （这个概念的提出者、实验或理论背景，100字左右）
-
-    ## 生活例子
-    （一个具体的、贴近日常的例子，让人一听就懂）
-
-    ## 今日行动处方
-    （一个今天就能做的具体行动建议）
-
-    ## 今日金句
-    （一句帮你记住这个概念的话，20字以内）
-
-    注意：直接输出内容，不要有多余的说明文字。"""
+    prompt = ""
     role = "你是专业的心理学知识科普作者，擅长用通俗语言解释复杂概念。"
     name = "Psychology"
+
+    concept_history = []
+    history_file = "data/psychology-history.txt"
+
+    def load_concept_history(self):
+        with open(self.history_file, 'r', encoding='utf-8') as f:
+            self.concept_history = f.read().split(" ")
+
+        self.prompt = f"""你是一个心理学知识科普作者。请用通俗易懂的方式解读一个心理学概念：
+
+        【背景信息】
+        - 昨天讲的概念是：「{self.concept_history}」
+        - 你的任务：为今天选择一个**全新的、不重复的**心理学概念，并完成整篇解读。
+
+        【选择原则】
+        1. 不能和昨天（以及之前所有天）的概念重复
+        2. 优先选择和昨天概念有某种关联的（对立、互补、递进、相关），让读者有「连续感」
+        3. 如果是第一期，从最经典、最实用的概念开始
+
+        【输出格式】
+        请严格按照以下结构输出（不要增加或删减任何章节）：
+
+        ## 概念名称
+        （这个概念的名字）
+
+        ## 一句话定义
+        （用一句话说清楚这个概念是什么）
+
+        ## 经典来源 / 背景
+        （这个概念的提出者、实验或理论背景，100字左右）
+
+        ## 生活例子
+        （一个具体的、贴近日常的例子，让人一听就懂）
+
+        ## 今日行动处方
+        （一个今天就能做的具体行动建议）
+
+        ## 今日金句
+        （一句帮你记住这个概念的话，20字以内）
+
+        注意：直接输出内容，不要有多余的说明文字。"""
 
     ## 直接返回每日心理学概念内容
     def call_api(self):
         # return ""
+        self.load_concept_history()
+
+        if self.prompt == "":
+            raise ValueError("请先获取prompt")
         ## 目前使用api : clawbrain-flash
         ## 未来计划 : gemeni || cloudflare
         api_key = os.environ.get("DEEPSEEK_API_KEY")
@@ -71,6 +97,11 @@ class PsychologyNews:
         
         lines = content.split('\n')
         for line in lines:
+            if line.startswith('## 概念名称'):
+                if current_text:
+                    sections[current_key] = '\n'.join(current_text).strip()
+                current_key = 'name'
+                current_text = []
             if line.startswith('## 一句话定义'):
                 if current_text:
                     sections[current_key] = '\n'.join(current_text).strip()
@@ -103,6 +134,7 @@ class PsychologyNews:
             sections[current_key] = '\n'.join(current_text).strip()
         
         # 补全缺失字段
+        sections.setdefault('name','')
         sections.setdefault('definition', '')
         sections.setdefault('origin', '')
         sections.setdefault('example', '')
@@ -118,6 +150,7 @@ class PsychologyNews:
             return Template(f.read())
 
      ## 返回对应网页html文本
+
     def generate(self):
         today = datetime.now()
         date_str = today.strftime('%Y/%m/%d')
@@ -126,9 +159,12 @@ class PsychologyNews:
 
         sections = self.parse_content(content)
 
+        self.concept_history.append(sections.get('name',''))
+
         template = self.load_template()
 
         data = {
+            'name': sections.get('name',''),
             'date': date_str,
             'definition': sections.get('definition', ''),
             'origin': sections.get('origin', ''),
@@ -140,6 +176,12 @@ class PsychologyNews:
         html = template.substitute(data)
 
         return html
+
+    def save_concept_history(self):
+        with open(self.history_file, 'w', encoding='utf-8') as f:
+            for i in self.concept_history:
+                f.write(i)
+                f.write(" ")
 
     ## 直接生成
     def create_file(self):
