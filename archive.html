@@ -324,19 +324,21 @@
 
                 let html = '';
                 sorted.forEach(item => {
-                    const displayDate = item.date.replace(/-/g, '年') + '日';
+                    const displayDate = item.date || '?';
                     // 预览截取概念名称作为预览
-                    const previewText = item.concept || '点击查看';
+                    const previewText = item.concept || '未知概念';
                     
                     html += `
                         <div class="timeline-item">
                             <div class="date">${displayDate}</div>
                             <div class="concept-name">
-                                <a href="${ARCHIVES_PATH}${item.file}" target="_blank">
-                                    ${item.concept || '查看详情'}
-                                </a>
+                                🧠 ${previewText}
                             </div>
-                            <div class="preview">🧠 ${item.concept || ''}</div>
+                            <div class="preview">
+                                <a href="${item.file}" target="_blank">
+                                    跳转文件 : ${item.file}
+                                </a>    
+                            </div>
                             <span class="tag"># 心理学</span>
                         </div>
                     `;
